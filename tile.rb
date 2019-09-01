@@ -15,7 +15,7 @@ class Tile
   end
 
   def set_val(val)
-    value = val
+    self.value = val
   end
 
   private

@@ -11,7 +11,9 @@ class Board
   def initialize(grid)
     @grid = grid
 
-    render
+    grid.each_with_index do |row, i|
+      row.each_with_index { |_, j| calculate_adjacent_bombs(i, j) }
+    end 
   end
 
   def render
@@ -21,42 +23,53 @@ class Board
 
     grid.each_with_index do |row, i|
       display_row = i.to_s + " | "
-      row.each_with_index { |_, j| display_row += calculate_adjacent_bombs(i, j) + " " }
+      row.each { |tile| display_row += tile.render + " " }
       puts display_row
     end
 
     puts ""
   end
 
-  def reveal(pos = [0, 1])
+  def reveal(pos)
     x, y = pos
+
+    return if x == -1 || y == -1
+    return if grid[x][y].revealed
     grid[x][y].revealed = true
-    render
+    return unless grid[x][y].get_val == "_"
+
+
+    reveal([x - 1, y]) if grid[x - 1]
+    reveal([x + 1, y]) if grid[x + 1]
+    reveal([x, y - 1]) if grid[x][y - 1]
+    reveal([x, y + 1]) if grid[x][y + 1]
   end
 
   def calculate_adjacent_bombs(row, column)
     tile = grid[row][column]
-    return tile.render unless tile.render == "_"
+    return unless tile.get_val == "_"
 
     count = 0
 
     (row-1..row+1).each do |i|
       next unless grid[i] 
       (column-1..column+1).each do |j|
+        next if i == -1 || j == -1
         adjacent_tile = grid[i][j]
         next unless adjacent_tile
         count += 1 if adjacent_tile.get_val == "b"
       end
     end
 
-    count == 0 ? tile.render : count.to_s
+    tile.set_val(count.to_s) if count > 0
+  end
+
+  def game_over?
+    win = grid.flatten.all? { |tile| tile.revealed || tile.get_val == "b" }
+    lose = grid.flatten.any? { |tile| tile.revealed && tile.get_val == "b" }
+    win || lose
   end
 
   private
   attr_reader :grid
 end
-
-board = Board.from_file("./grids/minefield1.txt")
-board.reveal
-board.reveal([5, 5])
-board.reveal([3, 7])
