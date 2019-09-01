@@ -1,10 +1,15 @@
 class Tile
-  def initialize(bomb)
-    @value = set_value
-    @bomb = bomb
-    @revealed = false
+  def initialize(initial_value, grid)
+    @grid = grid
+    @value = set_value(initial_value)
+    @revealed = true
   end
 
-  def set_value
+  def get_val
+    @revealed ? @value : "*"
+  end
+
+  def set_value(value)
+    value
   end
 end
