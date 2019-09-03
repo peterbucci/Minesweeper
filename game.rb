@@ -16,19 +16,22 @@ class Game
     end_game
   end
 
-  def get_pos
-    pos = nil
+  def get_pos(message = "Enter a position to reveal it on the board. (e.g. 1,2)", pos = nil)
+    return pos if pos && valid_pos?(pos)
 
-    until pos && valid_pos?(pos)
-      puts "Enter a position to reveal it on the board. (e.g. 1,2)"
-      pos = gets.chomp
-    end
+    puts "\n" + message
+    puts "> "
 
-    pos.split(",").map(&:to_i)
+    pos = parse_pos(gets.chomp)
+    get_pos("Invalid position entered (did you use a comma?)", pos)
   end
 
   def valid_pos?(pos)
-    true
+    pos.is_a?(Array) && pos.length == 2 && pos.all? { |x| x.between?(0, 8) }
+  end
+
+  def parse_pos(pos)
+    pos.split(",").map(&:to_i)
   end
 
   def end_game

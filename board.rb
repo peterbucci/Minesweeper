@@ -18,16 +18,13 @@ class Board
 
   def render
     puts "\e[H\e[2J"
-    puts "    " + @grid.map.with_index { |_, i| i.to_s }.join(" ")
-    puts ""
+    puts "    " + @grid.map.with_index { |_, i| i.to_s }.join(" ") + "\n\n"
 
     grid.each_with_index do |row, i|
       display_row = i.to_s + " | "
       row.each { |tile| display_row += tile.render + " " }
       puts display_row
     end
-
-    puts ""
   end
 
   def reveal(pos)
