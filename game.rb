@@ -36,7 +36,13 @@ class Game
 
   def end_game
     board.render
-    puts "Game Over"
+
+    puts "\n"
+    if board.lose
+      puts "Sorry! You Lose!"
+    else
+      puts "Congratulations! You win!"
+    end
   end
 
   private

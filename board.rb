@@ -1,15 +1,27 @@
 require_relative "tile"
 
 class Board
-  def self.from_file(filename)
-    rows = File.readlines(filename).map(&:chomp)
-    tiles = rows.map { |row| row.split("").map { |tile| Tile.new(tile) } }
+  attr_reader :lose
 
-    Board.new(tiles)
+
+  def self.from_file(filename)
+    count = 0
+    rows = File.readlines(filename).map(&:chomp)
+
+    tiles = rows.map do |row|
+      row.split("").map do |tile|
+        count += 1 unless tile == "b"
+        Tile.new(tile) 
+      end
+    end
+
+    Board.new(tiles, count)
   end
 
-  def initialize(grid)
+  def initialize(grid, safe_squares)
     @grid = grid
+    @safe_squares = safe_squares
+    @lose = false
 
     grid.each_with_index do |row, i|
       row.each_with_index { |_, j| calculate_adjacent_bombs(i, j) }
@@ -31,9 +43,12 @@ class Board
     x, y = pos
     current_tile = grid[x][y]
     out_of_bounds = (x == -1 || y == -1)
+
+    @lose = true if current_tile.get_val == "b"
   
     return if out_of_bounds || current_tile.revealed
 
+    @safe_squares -= 1
     current_tile.revealed = true
 
     return unless current_tile.get_val == "_"
@@ -65,8 +80,8 @@ class Board
   end
 
   def game_over?
-    win = grid.flatten.all? { |tile| tile.revealed || tile.get_val == "b" }
-    lose = grid.flatten.any? { |tile| tile.revealed && tile.get_val == "b" }
+    win = @safe_squares == 0
+
     win || lose
   end
 
