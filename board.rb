@@ -1,7 +1,7 @@
 require_relative "tile"
 
 class Board
-  attr_reader :lose
+  attr_reader :size, :lose
 
 
   def self.from_file(rows)
@@ -19,6 +19,7 @@ class Board
 
   def initialize(grid, safe_squares)
     @grid = grid
+    @size = grid.length
     @safe_squares = safe_squares
     @lose = false
 

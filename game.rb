@@ -79,7 +79,7 @@ class Game
   end
 
   def valid_pos?(pos)
-    pos.is_a?(Array) && pos.length == 2 && pos.all? { |x| x.between?(0, 8) }
+    pos.is_a?(Array) && pos.length == 2 && pos.all? { |x| x.between?(0, board.size) }
   end
 
   def parse_pos(pos)
