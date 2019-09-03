@@ -29,11 +29,12 @@ class Board
 
   def render
     puts "\e[H\e[2J"
-    puts "    " + @grid.map.with_index { |_, i| i.to_s }.join(" ") + "\n\n"
+    puts "     " + @grid.map.with_index { |_, i| i < 10 ? i.to_s + " " : i.to_s }.join(" ") + "\n\n"
 
     grid.each_with_index do |row, i|
+      i = " " + i.to_s if i < 10
       display_row = i.to_s + " | "
-      row.each { |tile| display_row += tile.render + " " }
+      row.each { |tile| display_row += tile.render + "  " }
       puts display_row
     end
   end
