@@ -32,17 +32,20 @@ class Board
 
   def reveal(pos)
     x, y = pos
+    current_tile = grid[x][y]
+    out_of_bounds = (x == -1 || y == -1)
+  
+    return if out_of_bounds || current_tile.revealed
 
-    return if x == -1 || y == -1
-    return if grid[x][y].revealed
-    grid[x][y].revealed = true
-    return unless grid[x][y].get_val == "_"
+    current_tile.revealed = true
 
+    return unless current_tile.get_val == "_"
 
-    reveal([x - 1, y]) if grid[x - 1]
-    reveal([x + 1, y]) if grid[x + 1]
-    reveal([x, y - 1]) if grid[x][y - 1]
-    reveal([x, y + 1]) if grid[x][y + 1]
+    [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]. each do |direction|
+      row = direction[0]
+      column = direction[1]
+      reveal(direction) if grid[row] && grid[row][column]
+    end
   end
 
   def calculate_adjacent_bombs(row, column)
