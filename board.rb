@@ -4,9 +4,8 @@ class Board
   attr_reader :lose
 
 
-  def self.from_file(filename)
+  def self.from_file(rows)
     count = 0
-    rows = File.readlines(filename).map(&:chomp)
 
     tiles = rows.map do |row|
       row.split("").map do |tile|
@@ -43,12 +42,10 @@ class Board
     x, y = pos
     current_tile = grid[x][y]
     out_of_bounds = (x == -1 || y == -1)
-
-    @lose = true if current_tile.get_val == "b"
   
     return if out_of_bounds || current_tile.revealed
 
-    @safe_squares -= 1
+    current_tile.get_val == "b" ? @lose = true : @safe_squares -= 1
     current_tile.revealed = true
 
     return unless current_tile.get_val == "_"
