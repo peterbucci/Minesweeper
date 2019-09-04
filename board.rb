@@ -48,7 +48,8 @@ class Board
 
     return unless current_tile.get_val == "_"
 
-    [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]. each do |direction|
+    # Try to condense all the directional looping into a single method?
+    [[x - 1, y], [x + 1, y], [x - 1, y - 1], [x + 1, y - 1], [x, y - 1], [x, y + 1], [x - 1, y + 1], [x + 1, y + 1]]. each do |direction|
       row = direction[0]
       column = direction[1]
       reveal(direction) if grid[row] && grid[row][column]
