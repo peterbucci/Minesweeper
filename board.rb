@@ -41,7 +41,7 @@ class Board
   
     return if out_of_bounds || current_tile.revealed
 
-    add_bombs unless @calulcated_adjacent
+    add_bombs(x, y) unless @calulcated_adjacent
 
     current_tile.get_val == "b" ? @lose = true : @safe_squares -= 1
     current_tile.revealed = true
@@ -55,15 +55,27 @@ class Board
     end
   end
 
-  def add_bombs
+  def add_bombs(row, column)
+    # Get all tiles adjacent to current tile. Add to array and filter from the random_tile
+    filtered = []
+    (row-1..row+1).each do |i|
+      next unless grid[i] 
+      (column-1..column+1).each do |j|
+        next if i == -1 || j == -1
+        adjacent_tile = grid[i][j]
+        next unless adjacent_tile
+        filtered << adjacent_tile
+      end
+    end
+
     if @bombs_to_add > 0
-      random_tile = grid.sample.reject {|tile| tile.get_val == "b" || tile.revealed }.sample
+      random_tile = grid.sample.reject {|tile| tile.get_val == "b" || filtered.include?(tile) }.sample
       random_tile.set_val("b")
 
       @bombs_to_add -= 1
       @safe_squares -= 1
     
-      add_bombs
+      add_bombs(row, column)
     else
       @calulcated_adjacent = true
 
