@@ -4,28 +4,22 @@ class Board
   attr_reader :size, :lose
 
 
-  def self.from_file(rows)
-    count = 0
+  def self.create(rows, bombs)
+    count = rows.join("").length
+    tiles = rows.map { |row| row.split("").map { |tile| Tile.new(tile) } }
 
-    tiles = rows.map do |row|
-      row.split("").map do |tile|
-        count += 1 unless tile == "b"
-        Tile.new(tile) 
-      end
-    end
-
-    Board.new(tiles, count)
+    Board.new(tiles, count, bombs)
   end
 
-  def initialize(grid, safe_squares)
+  def initialize(grid, safe_squares, bombs)
     @grid = grid
     @size = grid.length
+
+    @bombs_to_add = bombs
+    @calulcated_adjacent = nil
+
     @safe_squares = safe_squares
     @lose = false
-
-    grid.each_with_index do |row, i|
-      row.each_with_index { |_, j| calculate_adjacent_bombs(i, j) }
-    end 
   end
 
   def render
@@ -47,6 +41,8 @@ class Board
   
     return if out_of_bounds || current_tile.revealed
 
+    add_bombs unless @calulcated_adjacent
+
     current_tile.get_val == "b" ? @lose = true : @safe_squares -= 1
     current_tile.revealed = true
 
@@ -56,6 +52,24 @@ class Board
       row = direction[0]
       column = direction[1]
       reveal(direction) if grid[row] && grid[row][column]
+    end
+  end
+
+  def add_bombs
+    if @bombs_to_add > 0
+      random_tile = grid.sample.reject {|tile| tile.get_val == "b" || tile.revealed }.sample
+      random_tile.set_val("b")
+
+      @bombs_to_add -= 1
+      @safe_squares -= 1
+    
+      add_bombs
+    else
+      @calulcated_adjacent = true
+
+      grid.each_with_index do |row, i|
+        row.each_with_index { |_, j| calculate_adjacent_bombs(i, j) }
+      end 
     end
   end
 

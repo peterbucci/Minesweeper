@@ -2,15 +2,13 @@ require_relative "board"
 
 class Game
   def self.configure
-    @map_type = Game.set_option("Choose a map type |PREBUILT| or |RANDOM|", /random|prebuilt/)
+    levels = { "easy" => [9, 10], "medium" => [16, 40], "hard" => [22, 60] }
 
-    if @map_type == "random"
-      difficulty = Game.set_option("Choose a difficulty |EASY|, |MEDIUM|, or |HARD|", /easy|medium|hard/)
+    difficulty = Game.set_option("Choose a difficulty |EASY|, |MEDIUM|, or |HARD|", /easy|medium|hard/)
+    size = levels[difficulty][0]
+    bombs = levels[difficulty][1]
 
-      created_board = Game.create_a_board(difficulty)
-    else
-      created_board = Game.choose_a_board
-    end
+    created_board = Game.create_a_board(size, bombs)
 
     Game.new(created_board)
   end
@@ -24,33 +22,9 @@ class Game
     Game.set_option(message, pattern, value)
   end
 
-  def self.create_a_board(difficulty)
-    size, bombs = 9, 10 if difficulty == "easy"
-    size, bombs = 16, 40 if difficulty == "medium"
-    size, bombs = 22, 60 if difficulty == "hard"
-
-    empty_tiles = Array.new((size * size) - bombs, "_")
-    bomb_tiles = Array.new(bombs, "b")
-    tiles = (empty_tiles + bomb_tiles).shuffle
-    
-    rows = tiles.join("").scan(/.{#{size}}/)
-    Board.from_file(rows)
-  end
-
-  def self.choose_a_board
-    prebuilt_maps = Dir.children("./grids")
-    user_input = nil
-
-    until prebuilt_maps.include?(user_input)
-      puts "\n" + "Choose a map"
-      puts "\n" + prebuilt_maps.join(" | ").upcase
-
-      user_input = gets.chomp.downcase
-      user_input += ".txt" unless user_input.include?(".txt")
-    end
-
-    rows = File.readlines("./grids/#{user_input}").map(&:chomp)
-    Board.from_file(rows)
+  def self.create_a_board(size, bombs)
+    rows = ("_"*size*size).scan(/.{#{size}}/)
+    Board.create(rows, bombs)
   end
 
   def initialize(board)
