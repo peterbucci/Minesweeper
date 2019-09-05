@@ -16,7 +16,7 @@ class Board
     @size = grid.length
 
     @bombs_to_add = bombs
-    @calulcated_adjacent = nil
+    @calculated_adjacent = nil
 
     @safe_squares = safe_squares
     @lose = false
@@ -41,33 +41,23 @@ class Board
   
     return if out_of_bounds || current_tile.revealed
   
-    add_bombs(row, column) unless @calulcated_adjacent
+    add_bombs(row, column) unless @calculated_adjacent
   
     current_tile.get_val == "b" ? @lose = true : @safe_squares -= 1
     current_tile.revealed = true
   
     return unless current_tile.get_val == "_"
-  
-    # Try to condense all the directional looping into a single method?
-    adjacent_rows = (row-1..row+1)
-    adjacent_columns = (column-1..column+1)
-  
-    adjacent_rows.each do |i|
-      next unless grid[i]
-  
-      adjacent_columns.each do |j|
-        adjacent_tile = grid[i][j]
-        in_bounds = i >= 0 && j >= 0
-        next unless in_bounds && adjacent_tile
-  
-        reveal([i, j]) unless adjacent_tile.revealed
-      end
-    end
+
+    # 3rd loop already condensed
+    adjacent_tiles = []
+    search_adjacent_tiles(row, column) { |row, column| adjacent_tiles << [row, column] }
+    adjacent_tiles.each { |tile| reveal(tile) }
   end
 
   def add_bombs(row, column)
     # 2nd loop already condensed
-    filtered = search_adjacent_tiles(row, column, adjacent_tiles = [])
+    filtered = []
+    search_adjacent_tiles(row, column) { |row, column| filtered << grid[row][column] }
 
     if @bombs_to_add > 0
       random_tile = grid.sample.reject {|tile| tile.get_val == "b" || filtered.include?(tile) }.sample
@@ -78,7 +68,7 @@ class Board
     
       add_bombs(row, column)
     else
-      @calulcated_adjacent = true
+      @calculated_adjacent = true
 
       grid.each_with_index do |row, i|
         row.each_with_index { |_, j| calculate_adjacent_bombs(i, j) }
@@ -91,7 +81,8 @@ class Board
     return unless current_tile.get_val == "_"
     
     # 3rd loop already condensed
-    bomb_count = search_adjacent_tiles(row, column, adjacent_bombs = 0)
+    bomb_count = 0
+    search_adjacent_tiles(row, column) { |row, column| bomb_count += 1 if grid[row][column].get_val == "b"}
     current_tile.set_val(bomb_count.to_s) if bomb_count > 0
   end
 
@@ -101,7 +92,8 @@ class Board
     win || lose
   end
 
-  def search_adjacent_tiles(row, column, return_value = nil)
+  # return the adjacent tiles instead of passing in a proc?
+  def search_adjacent_tiles(row, column, &prc)
     adjacent_rows = (row-1..row+1)
     adjacent_columns = (column-1..column+1)
   
@@ -113,12 +105,9 @@ class Board
         in_bounds = i >= 0 && j >= 0
         next unless in_bounds && adjacent_tile
   
-        (adjacent_tile.get_val == "b" && return_value += 1) if return_value.is_a?(Integer) # For counting adjacent bombs during map creation
-        return_value << adjacent_tile if return_value.is_a?(Array) # For placing bombs after your first selection
+        prc.call(i, j)
       end
     end
-
-    return_value
   end
 
   private
