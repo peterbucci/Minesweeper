@@ -18,7 +18,6 @@ class Board
     @first_turn = true
     @bombs_to_add = bombs
 
-
     @safe_squares_remaining = safe_squares
     @lose = false
   end
