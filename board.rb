@@ -1,9 +1,6 @@
 require_relative "tile"
 
 class Board
-  attr_reader :lose
-
-
   def self.create(rows, bombs)
     count = rows.join("").length
     tiles = rows.each_with_index.map { |row, i| row.split("").each_with_index.map { |tile, j| Tile.new(tile, i, j) } }
@@ -13,16 +10,17 @@ class Board
 
   def initialize(grid, safe_squares, bombs)
     @grid = grid
-    @first_turn = true
+    @turns = 0
     @bombs_to_add = bombs
+    @bombs_left = bombs
 
     @safe_squares_remaining = safe_squares
     @lose = false
   end
 
-  def render(timer, game_over = false)
+  def render(timer, player, game_over = false)
     puts "\e[H\e[2J"
-    puts "Time: " + timer.to_s
+    puts "Player: " + player + " | Turns: " + @turns.to_s + " | Bombs: " + @bombs_left.to_s + " | Time: " + timer.to_s
     puts "\n     " + @grid.map.with_index { |_, i| i < 10 ? i.to_s + " " : i.to_s }.join(" ") + "\n\n"
 
     grid.each_with_index do |row, i|
@@ -34,19 +32,30 @@ class Board
   end
 
   def reveal(current_tile)
-    add_bombs(current_tile) && calculate_adjacent_bombs if @first_turn
+    add_bombs(current_tile) && calculate_adjacent_bombs if @turns == 1
 
     row, column = current_tile.get_coordinates
     out_of_bounds = (row == -1 || column == -1)
     return if out_of_bounds || current_tile.revealed
   
+    @bombs_left += 1 if current_tile.render == "F"
     current_tile.reveal && check_for_bomb(current_tile)
 
     get_adjacent_tiles(current_tile).each { |tile| reveal(tile) } if current_tile.get_val == "_"
   end
 
+  def take_turn
+    @turns += 1
+  end
+
   def toggle_flag(tile)
-    tile.flag ? tile.flag = false : tile.flag = true
+    if tile.flag
+      tile.flag = false
+      @bombs_left += 1
+    else
+      tile.flag = true
+      @bombs_left -= 1
+    end
   end
 
   def check_for_bomb(current_tile)
@@ -62,6 +71,16 @@ class Board
     win = @safe_squares_remaining == 0
 
     win || lose
+  end
+
+  def game_over_message
+    if lose 
+      puts "Sorry, you lose!"
+      puts "You Lost in " + @turns.to_s + " turns."
+    else
+      puts "Congratulations! You win!" 
+      puts "You lost in " + @turns.to_s + " turns."
+    end
   end
 
   def add_bombs(current_tile)
@@ -119,5 +138,5 @@ class Board
   end
 
   private
-  attr_reader :grid
+  attr_reader :grid, :lose
 end
