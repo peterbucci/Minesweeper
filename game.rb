@@ -10,7 +10,7 @@ class Game
 
     created_board = Game.create_a_board(size, bombs)
 
-    Game.new(created_board)
+    Game.new(created_board, size)
   end
 
   def self.set_option(message, pattern, value = nil)
@@ -27,8 +27,9 @@ class Game
     Board.create(rows, bombs)
   end
 
-  def initialize(board)
+  def initialize(board, size)
     @board = board
+    @size = size
 
     run
   end
@@ -37,7 +38,7 @@ class Game
     until board.game_over?
       board.render
       selected_pos = board[get_pos]
-      board.reveal(selected_pos)
+      @flag ? board.toggle_flag(selected_pos) : board.reveal(selected_pos)
     end
 
     end_game
@@ -49,12 +50,19 @@ class Game
     puts "\n" + message
     puts "> "
 
-    pos = parse_pos(gets.chomp)
+    user_input = gets.chomp
+    if user_input[0] == "f"
+      @flag = true
+      user_input.slice!(0)
+    else
+      @flag = false
+    end
+    pos = parse_pos(user_input)
     get_pos("Invalid position entered (did you use a comma?)", pos)
   end
 
   def valid_pos?(pos)
-    pos.is_a?(Array) && pos.length == 2 && pos.all? { |x| x.between?(0, board.size) }
+    pos.is_a?(Array) && pos.length == 2 && pos.all? { |x| x.between?(0, @size) }
   end
 
   def parse_pos(pos)
@@ -62,7 +70,7 @@ class Game
   end
 
   def end_game
-    board.render
+    board.render(true)
 
     puts "\n"
     if board.lose

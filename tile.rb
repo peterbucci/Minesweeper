@@ -1,23 +1,25 @@
 class Tile
   attr_reader :revealed
+  attr_accessor :flag
 
   def initialize(val, row, column)
     @value = val
+    @flag = false
     @revealed = false
     @row = row
     @column = column
   end
 
   def render
-    @revealed ? value : "*"
+    @revealed ? @value : @flag ? "F" : "*"
   end
 
   def get_val
-    value
+    @value
   end
 
   def set_val(val)
-    self.value = val
+    @value = val
   end
 
   def get_coordinates
@@ -27,7 +29,4 @@ class Tile
   def reveal
     @revealed = true
   end
-
-  private
-  attr_accessor :value
 end

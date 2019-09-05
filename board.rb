@@ -1,7 +1,7 @@
 require_relative "tile"
 
 class Board
-  attr_reader :size, :lose
+  attr_reader :lose
 
 
   def self.create(rows, bombs)
@@ -13,8 +13,6 @@ class Board
 
   def initialize(grid, safe_squares, bombs)
     @grid = grid
-    @size = grid.length
-
     @first_turn = true
     @bombs_to_add = bombs
 
@@ -22,14 +20,14 @@ class Board
     @lose = false
   end
 
-  def render
+  def render(game_over = false)
     puts "\e[H\e[2J"
     puts "     " + @grid.map.with_index { |_, i| i < 10 ? i.to_s + " " : i.to_s }.join(" ") + "\n\n"
 
     grid.each_with_index do |row, i|
       i = " " + i.to_s if i < 10
       display_row = i.to_s + " | "
-      row.each { |tile| display_row += tile.render + "  " }
+      row.each { |tile| game_over ? display_row += tile.get_val + "  " : display_row += tile.render + "  " }
       puts display_row
     end
   end
@@ -46,8 +44,17 @@ class Board
     get_adjacent_tiles(current_tile).each { |tile| reveal(tile) } if current_tile.get_val == "_"
   end
 
+  def toggle_flag(tile)
+    tile.flag ? tile.flag = false : tile.flag = true
+  end
+
   def check_for_bomb(current_tile)
-    current_tile.get_val == "b" ? @lose = true : @safe_squares_remaining -= 1
+    if current_tile.get_val == "b"
+      @lose = true
+      current_tile.set_val("X")
+    else
+      @safe_squares_remaining -= 1
+    end
   end
 
   def game_over?
