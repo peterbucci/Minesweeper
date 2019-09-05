@@ -30,13 +30,15 @@ class Game
   def initialize(board, size)
     @board = board
     @size = size
+    @start_time = Time.now.to_i
 
     run
   end
   
   def run
     until board.game_over?
-      board.render
+      current_time = Time.now.to_i
+      board.render(current_time - start_time)
       selected_pos = board[get_pos]
       @flag ? board.toggle_flag(selected_pos) : board.reveal(selected_pos)
     end
@@ -70,7 +72,8 @@ class Game
   end
 
   def end_game
-    board.render(true)
+    current_time = Time.now.to_i
+    board.render(current_time - start_time, true)
 
     puts "\n"
     if board.lose
@@ -81,7 +84,7 @@ class Game
   end
 
   private
-  attr_reader :board
+  attr_reader :board, :start_time
 end
 
 Game.configure

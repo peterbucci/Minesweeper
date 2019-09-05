@@ -20,9 +20,10 @@ class Board
     @lose = false
   end
 
-  def render(game_over = false)
+  def render(timer, game_over = false)
     puts "\e[H\e[2J"
-    puts "     " + @grid.map.with_index { |_, i| i < 10 ? i.to_s + " " : i.to_s }.join(" ") + "\n\n"
+    puts "Time: " + timer.to_s
+    puts "\n     " + @grid.map.with_index { |_, i| i < 10 ? i.to_s + " " : i.to_s }.join(" ") + "\n\n"
 
     grid.each_with_index do |row, i|
       i = " " + i.to_s if i < 10
