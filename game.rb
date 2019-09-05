@@ -36,7 +36,8 @@ class Game
   def run
     until board.game_over?
       board.render
-      board.reveal(get_pos)
+      selected_pos = board[get_pos]
+      board.reveal(selected_pos)
     end
 
     end_game

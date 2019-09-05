@@ -1,9 +1,11 @@
 class Tile
   attr_accessor :revealed
 
-  def initialize(val)
+  def initialize(val, row, column)
     @value = val
     @revealed = false
+    @row = row
+    @column = column
   end
 
   def render
@@ -16,6 +18,10 @@ class Tile
 
   def set_val(val)
     self.value = val
+  end
+
+  def get_coordinates
+    [@row, @column]
   end
 
   private
