@@ -15,10 +15,11 @@ class Board
     @grid = grid
     @size = grid.length
 
+    @first_turn = true
     @bombs_to_add = bombs
-    @calculated_adjacent = nil
 
-    @safe_squares = safe_squares
+
+    @safe_squares_remaining = safe_squares
     @lose = false
   end
 
@@ -35,53 +36,52 @@ class Board
   end
 
   def reveal(current_tile)
+    add_bombs(current_tile) && calculate_adjacent_bombs if @first_turn
+
     row, column = current_tile.get_coordinates
     out_of_bounds = (row == -1 || column == -1)
-  
     return if out_of_bounds || current_tile.revealed
   
-    add_bombs(current_tile) unless @calculated_adjacent
-  
-    current_tile.get_val == "b" ? @lose = true : @safe_squares -= 1
-    current_tile.revealed = true
-  
-    return unless current_tile.get_val == "_"
+    current_tile.reveal && check_for_bomb(current_tile)
 
-    get_adjacent_tiles(current_tile).each { |tile| reveal(tile) }
+    get_adjacent_tiles(current_tile).each { |tile| reveal(tile) } if current_tile.get_val == "_"
   end
 
-  def add_bombs(current_tile)
-    if @bombs_to_add > 0
-      tile_and_adjacent = get_adjacent_tiles(current_tile)
-      random_tile = grid.sample.reject {|tile| tile.get_val == "b" || tile_and_adjacent.include?(tile) }.sample
-      random_tile.set_val("b")
-
-      @bombs_to_add -= 1
-      @safe_squares -= 1
-    
-      add_bombs(current_tile)
-    else
-      @calculated_adjacent = true
-
-      grid.each do |row|
-        row.each { |tile| calculate_adjacent_bombs(tile) }
-      end 
-    end
-  end
-
-  def calculate_adjacent_bombs(current_tile)
-    return unless current_tile.get_val == "_"
-    
-    bomb_count = 0
-    adjacent_tiles = get_adjacent_tiles(current_tile)
-    adjacent_tiles.each { |tile| bomb_count += 1 if tile.get_val == "b" }
-    current_tile.set_val(bomb_count.to_s) if bomb_count > 0
+  def check_for_bomb(current_tile)
+    current_tile.get_val == "b" ? @lose = true : @safe_squares_remaining -= 1
   end
 
   def game_over?
-    win = @safe_squares == 0
+    win = @safe_squares_remaining == 0
 
     win || lose
+  end
+
+  def add_bombs(current_tile)
+    return true if @bombs_to_add == 0
+    tile_and_adjacent = get_adjacent_tiles(current_tile)
+    random_tile = grid.sample.reject {|tile| tile.get_val == "b" || tile_and_adjacent.include?(tile) }.sample
+    random_tile.set_val("b")
+
+    @bombs_to_add -= 1
+    @safe_squares_remaining -= 1
+  
+    add_bombs(current_tile)
+  end
+
+  def calculate_adjacent_bombs
+    grid.each do |row| 
+      row.each do |current_tile|
+        next unless current_tile.get_val == "_"
+
+        bomb_count = 0
+        adjacent_tiles = get_adjacent_tiles(current_tile)
+        adjacent_tiles.each { |tile| bomb_count += 1 if tile.get_val == "b" }
+        current_tile.set_val(bomb_count.to_s) if bomb_count > 0
+      end
+    end
+
+    @first_turn = false
   end
 
   def get_adjacent_tiles(current_tile)

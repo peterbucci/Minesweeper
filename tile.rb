@@ -1,5 +1,5 @@
 class Tile
-  attr_accessor :revealed
+  attr_reader :revealed
 
   def initialize(val, row, column)
     @value = val
@@ -22,6 +22,10 @@ class Tile
 
   def get_coordinates
     [@row, @column]
+  end
+
+  def reveal
+    @revealed = true
   end
 
   private
