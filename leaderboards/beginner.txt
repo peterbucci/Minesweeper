@@ -1,0 +1,8 @@
+Monkey 5
+Peter 7
+Badger 8
+Lion 10
+Rabbit 13
+Donkey 17
+Turtle 22
+Lizard 27
