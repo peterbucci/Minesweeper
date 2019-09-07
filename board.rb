@@ -3,10 +3,15 @@ require_relative "tile"
 class Board
   attr_reader :lose
 
-  def self.create(rows, bombs)
-    tiles = rows.each_with_index.map { |row, i| row.split("").each_with_index.map { |tile, j| Tile.new(tile, i, j) } }
+  def self.create(rows, columns, bombs)
+    grid = []
+    (0...rows).each do |i|
+      row = []
+      (0...columns).each { |j| row << Tile.new(i, j) }
+      grid << row
+    end
 
-    Board.new(tiles, bombs)
+    Board.new(grid, bombs)
   end
 
   def initialize(grid, bombs)
@@ -19,7 +24,7 @@ class Board
   def render(timer, player, game_over = false)
     puts "\e[H\e[2J"
     puts "Player: " + player + " | Bombs: " + @bombs_left_to_flag.to_s + " | Time: " + timer.to_s
-    puts "\n     " + @grid.map.with_index { |_, i| i < 10 ? i.to_s + " " : i.to_s }.join(" ") + "\n\n"
+    puts "\n     " + @grid[0].map.with_index { |_, i| i < 10 ? i.to_s + " " : i.to_s }.join(" ") + "\n\n"
 
     grid.each_with_index do |row, i|
       i = " " + i.to_s if i < 10

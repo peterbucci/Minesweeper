@@ -2,17 +2,18 @@ require_relative "board"
 
 class Game
   def self.configure
-    levels = { "beginner" => [9, 10], "intermediate" => [16, 40], "expert" => [22, 60] }
+    levels = { "beginner" => [9, 9, 10], "intermediate" => [16, 16, 40], "expert" => [16, 30, 99], "custom" => [0, 0, 0] }
 
     player_name = Game.set_option("What's your name?", /^[a-zA-Z]{1,8}$/)
-    difficulty = Game.set_option("Choose a difficulty |beginner|, |intermediate|, or |expert|", /beginner|intermediate|expert/)
-    size = levels[difficulty][0]
-    bombs = levels[difficulty][1]
-    safe_squares = (size * size) - bombs
+    difficulty = Game.set_option("Choose a difficulty |beginner|, |intermediate|, |expert|, or |custom|", /beginner|intermediate|expert|custom/)
+    ["How many rows?", "How many columns?", "How many bombs?"].each_with_index { |message, i| levels[difficulty][i] = Game.set_option(message, /^[5-9]$|^[1-9][0-9]$/).to_i } if difficulty == "custom"
+    
+    rows, columns, bombs = levels[difficulty]
+    safe_squares = (rows * columns) - bombs
 
-    created_board = Game.create_a_board(size, bombs)
+    created_board = Board.create(rows, columns, bombs)
 
-    Game.new(player_name, created_board, size, difficulty, safe_squares)
+    Game.new(player_name, created_board, rows, columns, difficulty, safe_squares)
   end
 
   def self.set_option(message, pattern, value = nil)
@@ -24,18 +25,14 @@ class Game
     Game.set_option(message, pattern, value)
   end
 
-  def self.create_a_board(size, bombs)
-    rows = ("_"*size*size).scan(/.{#{size}}/)
-    Board.create(rows, bombs)
-  end
-
-  def initialize(player_name, board, size, difficulty, safe_squares)
+  def initialize(player_name, board, rows, columns, difficulty, safe_squares)
+    @player = player_name.capitalize
     @board = board
-    @size = size
+    @rows = rows
+    @columns = columns
     @difficulty = difficulty
     @start_time = Time.now.to_i
     @turn = 0
-    @player = player_name.capitalize
     @safe_squares = safe_squares
     @flags_placed = 0
     @lose = false
@@ -79,7 +76,7 @@ class Game
   end
 
   def valid_pos?(pos)
-    pos.is_a?(Array) && pos.length == 2 && pos.all? { |x| x.between?(0, @size) }
+    pos.is_a?(Array) && pos.length == 2 && pos[0].between?(0, @rows - 1) && pos[1].between?(0, @columns - 1)
   end
 
   def parse_pos(pos)
@@ -106,8 +103,8 @@ class Game
     @flags_placed == 1 ? n = "#{@flags_placed.to_s} tile" : n = "#{@flags_placed.to_s} tiles"
     puts "You marked #{n} with a flag."
 
-    add_to_leaderboard(final_time) unless @lose
-    retrieve_leaderboard
+    add_to_leaderboard(final_time) unless @lose || @difficulty == "custom"
+    retrieve_leaderboard unless @difficulty == "custom"
   end
 
   def retrieve_leaderboard

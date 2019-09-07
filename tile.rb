@@ -2,8 +2,8 @@ class Tile
   attr_reader :revealed
   attr_accessor :flag
 
-  def initialize(val, row, column)
-    @value = val
+  def initialize(row, column)
+    @value = "_"
     @flag = false
     @revealed = false
     @row = row
