@@ -1,8 +1,6 @@
 require_relative "tile"
 
 class Board
-  attr_reader :lose
-
   def self.create(rows, columns, bombs)
     grid = []
     (0...rows).each do |i|

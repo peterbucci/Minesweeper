@@ -1,0 +1,6 @@
+Gnu 64
+Ewe 65
+Chipmunk 68
+Hamster 71
+Coyote 75
+Chimpanzee 78

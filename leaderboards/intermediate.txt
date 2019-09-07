@@ -1,0 +1,5 @@
+Meerkat 18
+Chicken 22
+Bear 24
+Lovebird 27
+Octopus 30
